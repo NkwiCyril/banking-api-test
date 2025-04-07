@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
@@ -15,20 +16,24 @@ class Transaction extends Model
         'sender_account_id',
         'receiver_account_id',
         'amount',
-        'transaction_type',
+        'type',
         'status',
+        'description',
         'created_by',
     ];
 
-    public function sender() {
+    public function sender(): BelongsTo 
+    {
         return $this->belongsTo(BankAccount::class, 'sender_account_id');
     }
     
-    public function receiver() {
+    public function receiver(): BelongsTo
+    {
         return $this->belongsTo(BankAccount::class, 'receiver_account_id');
     }
     
-    public function createdBy() {
+    public function createdBy(): BelongsTo 
+    {
         return $this->belongsTo(User::class, 'created_by');
     }
 }

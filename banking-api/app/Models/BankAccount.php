@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BankAccount extends Model
 {
@@ -17,16 +19,18 @@ class BankAccount extends Model
         'balance',
     ];
 
-    public function customer()
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function sentTransactions() {
+    public function sentTransactions(): HasMany 
+    {
         return $this->hasMany(Transaction::class, 'sender_account_id');
     }
     
-    public function receivedTransactions() {
+    public function receivedTransactions(): HasMany 
+    {
         return $this->hasMany(Transaction::class, 'receiver_account_id');
     }
 }
