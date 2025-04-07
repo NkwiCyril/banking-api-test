@@ -45,4 +45,8 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function transactionsInitiated() {
+        return $this->hasMany(Transaction::class, 'created_by');
+    }
 }
