@@ -79,7 +79,12 @@ class CustomerController extends Controller
 
     public function update(Request $request, int $id): JsonResource|JsonResponse
     {
-        $customer = Customer::findOrFail($id);
+        $customer = Customer::find($id);
+
+        // Check if the customer exists
+        if (! $customer) {
+            return response()->json(['message' => 'Customer not found'], 404);
+        }
 
         $data = $request->validate([
             'full_name' => 'string',
@@ -88,31 +93,55 @@ class CustomerController extends Controller
             'address' => 'nullable|string',
         ]);
 
-        $customer->update($data);
+        try {
+            DB::beginTransaction();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Customer updated successfully!',
-            'statusCode' => 200,
-            'data' => new CustomerResource($customer),
-        ]);
+            $customer->update($data);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Customer updated successfully!',
+                'statusCode' => 200,
+                'data' => new CustomerResource($customer),
+            ]);
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to update customer',
+                'error' => $e->getMessage(),
+            ], 500);
+
+        }
     }
 
     public function destroy(int $id): JsonResponse
     {
-        $customer = Customer::findOrFail($id);
+        $customer = Customer::find($id);
 
         // Check if the customer exists
         if (! $customer) {
             return response()->json(['message' => 'Customer not found'], 404);
         }
 
-        $customer->delete();
+        try {
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Customer deleted successfully!',
-            'statusCode' => 200,
-        ]);
+            $customer->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Customer deleted successfully!',
+                'statusCode' => 200,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete customer',
+                'error' => $e->getMessage(),
+            ], 500);
+
+        }
     }
 }
