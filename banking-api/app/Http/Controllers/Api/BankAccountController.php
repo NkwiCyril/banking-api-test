@@ -21,7 +21,12 @@ class BankAccountController extends Controller
     {
         $bankAccounts = BankAccount::with($this->relationships)->latest()->get();
 
-        return BankAccountResource::collection($bankAccounts);
+        return response()->json([
+            'success' => true,
+            'message' => 'Accounts retrieved successfully.',
+            'statusCode' => 200,
+            'data' => BankAccountResource::collection($bankAccounts),
+        ], 200);
     }
 
     public function show(int $id)
@@ -33,7 +38,12 @@ class BankAccountController extends Controller
             return response()->json(['message' => 'Account not found'], 404);
         }
 
-        return new BankAccountResource($account);
+        return response()->json([
+            'success' => true,
+            'message' => 'Account retrieved successfully.',
+            'statusCode' => 200,
+            'data' => BankAccountResource::collection($account),
+        ], 200);
     }
 
     public function store(Request $request)
@@ -66,7 +76,12 @@ class BankAccountController extends Controller
 
             DB::commit();
 
-            return response()->json(new BankAccountResource($account->load($this->relationships)), 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Account created successfully!',
+                'statusCode' => 201,
+                'data' => BankAccountResource::collection($account),
+            ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
