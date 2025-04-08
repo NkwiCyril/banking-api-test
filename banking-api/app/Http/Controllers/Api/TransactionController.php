@@ -45,7 +45,16 @@ class TransactionController extends Controller
 
             DB::commit();
 
-            return response()->json(['message' => 'Transfer successful'], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Transfer completed successfully.',
+                'statusCode' => 200,
+                'data' => [
+                    'sender_account' => $sender->fresh(),
+                    'receiver_account' => $receiver->fresh(),
+                    'transaction' => new TransactionResource(Transaction::latest()->first()),
+                ],
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
