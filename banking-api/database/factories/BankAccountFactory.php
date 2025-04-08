@@ -18,7 +18,7 @@ class BankAccountFactory extends Factory
     public function definition()
     {
         return [
-            'account_number' => $this->faker->unique()->numerify('##########'),
+            'account_number' => 'ACCT-'.strtoupper(uniqid()),
             'balance' => $this->faker->randomFloat(2, 100, 10000),
             'customer_id' => Customer::factory(),
         ];
