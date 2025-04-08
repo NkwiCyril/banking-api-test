@@ -14,15 +14,20 @@ class TransactionController extends Controller
     public function transfer(Request $request)
     {
         $data = $request->validate([
-            'sender_account_id' => 'required|exists:bank_accounts,id',
-            'receiver_account_id' => 'required|exists:bank_accounts,id|different:sender_account_id',
+            'sender_account_number' => 'required|exists:bank_accounts,account_number',
+            'receiver_account_number' => 'required|exists:bank_accounts,account_number|different:sender_account_number',
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string',
         ]);
 
         try {
-            $sender = BankAccount::lockForUpdate()->findOrFail($data['sender_account_id']);
-            $receiver = BankAccount::lockForUpdate()->findOrFail($data['receiver_account_id']);
+            $sender = BankAccount::where('account_number', $data['sender_account_number'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $receiver = BankAccount::where('account_number', $data['receiver_account_number'])
+                ->lockForUpdate()
+                ->firstOrFail();
 
             if ($sender->balance < $data['amount']) {
                 return response()->json(['message' => 'Insufficient funds'], 400);
@@ -33,7 +38,7 @@ class TransactionController extends Controller
             $sender->decrement('balance', $data['amount']);
             $receiver->increment('balance', $data['amount']);
 
-            Transaction::create([
+            $transaction = Transaction::create([
                 'sender_account_id' => $sender->id,
                 'receiver_account_id' => $receiver->id,
                 'amount' => $data['amount'],
@@ -52,7 +57,7 @@ class TransactionController extends Controller
                 'data' => [
                     'sender_account' => $sender->fresh(),
                     'receiver_account' => $receiver->fresh(),
-                    'transaction' => new TransactionResource(Transaction::latest()->first()),
+                    'transaction' => new TransactionResource($transaction),
                 ],
             ]);
 
@@ -68,7 +73,7 @@ class TransactionController extends Controller
     {
         $account = BankAccount::findOrFail($id);
 
-        if (!$account) {
+        if (! $account) {
             return response()->json(['message' => 'Account not found'], 404);
         }
 
