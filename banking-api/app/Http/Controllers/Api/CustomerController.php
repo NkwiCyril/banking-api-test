@@ -48,7 +48,7 @@ class CustomerController extends Controller
                 'status' => true,
                 'message' => 'Customer created successfully!',
                 'statusCode' => 201,
-                'data' => new CustomerResource($customer),
+                'data' => new CustomerResource($customer->load($this->relationships)),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
