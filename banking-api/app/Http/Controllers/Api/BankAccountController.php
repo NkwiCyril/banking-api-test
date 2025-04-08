@@ -31,7 +31,7 @@ class BankAccountController extends Controller
 
     public function show(int $id)
     {
-        $account = BankAccount::with($this->relationships)->findOrFail($id);
+        $account = BankAccount::findOrFail($id);
 
         // Check if the account exists
         if (! $account) {
@@ -42,7 +42,7 @@ class BankAccountController extends Controller
             'success' => true,
             'message' => 'Account retrieved successfully.',
             'statusCode' => 200,
-            'data' => BankAccountResource::collection($account),
+            'data' => new BankAccountResource($account->load($this->relationships)),
         ], 200);
     }
 
@@ -101,9 +101,14 @@ class BankAccountController extends Controller
         }
 
         return response()->json([
-            'account_id' => $account->id,
-            'account_number' => $account->account_number,
-            'balance' => $account->balance,
-        ]);
+            'success' => true,
+            'message' => 'Account balance retrieved successfully.',
+            'statusCode' => 200,
+            'data' => [
+                'account_id' => $account->id,
+                'account_number' => $account->account_number,
+                'balance' => $account->balance,
+            ],
+        ], 200);
     }
 }
