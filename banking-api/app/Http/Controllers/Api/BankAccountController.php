@@ -80,7 +80,7 @@ class BankAccountController extends Controller
                 'success' => true,
                 'message' => 'Account created successfully!',
                 'statusCode' => 201,
-                'data' => BankAccountResource::collection($account),
+                'data' => new BankAccountResource($account),
             ], 201);
 
         } catch (\Exception $e) {
