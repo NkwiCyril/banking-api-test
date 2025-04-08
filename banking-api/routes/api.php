@@ -6,11 +6,15 @@ use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\TransactionController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', 'api_key'])->group(function () {
+Route::middleware(['api_key'])->group(function () {
     Route::post('login', [AuthController::class, 'login']);
+});
 
+Route::middleware(['auth:sanctum', 'api_key'])->group(function () {
+    Route::post('logout', [AuthController::class, 'logout']);
+    
+    // Admin and employee specific routes
     Route::middleware('role:admin,employee')->group(function () {
-        Route::post('logout', [AuthController::class, 'logout']);
         Route::apiResource('customers', CustomerController::class);
         Route::apiResource('accounts', BankAccountController::class)->only(['store']);
         Route::post('transactions/transfer', [TransactionController::class, 'transfer']);
