@@ -8,6 +8,7 @@ use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
 
 class CustomerController extends Controller
 {
@@ -19,21 +20,44 @@ class CustomerController extends Controller
     {
         $customers = Customer::with($this->relationships)->latest()->get();
 
-        return CustomerResource::collection($customers);
+        return response()->json([
+            'status' => true,
+            'message' => 'Customers retrieved successfully!',
+            'statusCode' => 200,
+            'data' => CustomerResource::collection($customers),
+        ]);
     }
 
     public function store(Request $request): JsonResource|JsonResponse
     {
-        $data = $request->validate([
-            'full_name' => 'required|string',
-            'email' => 'required|email|unique:customers',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
-        ]);
+        try {
+            $data = $request->validate([
+                'full_name' => 'required|string',
+                'email' => 'required|email|unique:customers',
+                'phone' => 'nullable|string',
+                'address' => 'nullable|string',
+            ]);
 
-        $customer = Customer::create($data);
+            DB::beginTransaction();
 
-        return new CustomerResource($customer);
+            $customer = Customer::create($data);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Customer created successfully!',
+                'statusCode' => 201,
+                'data' => new CustomerResource($customer),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to create customer',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show(int $id): JsonResource|JsonResponse
@@ -45,7 +69,12 @@ class CustomerController extends Controller
             return response()->json(['message' => 'Customer not found'], 404);
         }
 
-        return new CustomerResource($customer);
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer retrieved successfully!',
+            'statusCode' => 200,
+            'data' => new CustomerResource($customer),
+        ]);
     }
 
     public function update(Request $request, int $id): JsonResource|JsonResponse
@@ -61,7 +90,12 @@ class CustomerController extends Controller
 
         $customer->update($data);
 
-        return new CustomerResource($customer);
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer updated successfully!',
+            'statusCode' => 200,
+            'data' => new CustomerResource($customer),
+        ]);
     }
 
     public function destroy(int $id): JsonResponse
@@ -75,6 +109,10 @@ class CustomerController extends Controller
 
         $customer->delete();
 
-        return response()->json(['message' => 'Customer deleted successfully'], 200);
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer deleted successfully!',
+            'statusCode' => 200,
+        ]);
     }
 }

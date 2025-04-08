@@ -20,6 +20,7 @@ class CustomerResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'address' => $this->address,
+            'bankAccounts' => BankAccountResource::collection($this->whenLoaded('bankAccounts')),
         ];
     }
 }
