@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\TransactionResource;
 use App\Models\BankAccount;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -54,13 +55,24 @@ class TransactionController extends Controller
         }
     }
 
-    public function history(BankAccount $account)
+    public function history(int $id)
     {
+        $account = BankAccount::findOrFail($id);
+
+        if (!$account) {
+            return response()->json(['message' => 'Account not found'], 404);
+        }
+
         $transactions = Transaction::where('sender_account_id', $account->id)
             ->orWhere('receiver_account_id', $account->id)
             ->orderByDesc('created_at')
             ->get();
 
-        return response()->json($transactions);
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaction history retrieved successfully.',
+            'statusCode' => 200,
+            'data' => TransactionResource::collection($transactions),
+        ], 200);
     }
 }
